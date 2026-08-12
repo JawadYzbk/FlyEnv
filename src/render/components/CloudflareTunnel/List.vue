@@ -5,14 +5,7 @@
         <div class="left">
           <span> Cloudflare Tunnel </span>
         </div>
-        <template v-if="isLocked">
-          <el-tooltip placement="top" :content="I18nT('host.CloudflareTunnel.licenseTips')">
-            <el-button type="warning" link :icon="Lock"></el-button>
-          </el-tooltip>
-        </template>
-        <template v-else>
-          <el-button class="button" link :icon="Plus" @click="add"> </el-button>
-        </template>
+        <el-button class="button" link :icon="Plus" @click="add"> </el-button>
       </div>
     </template>
     <el-table default-expand-all class="service-table" :data="list" show-overflow-tooltip>
@@ -24,14 +17,7 @@
               style="border-bottom: var(--el-table-border)"
             >
               <span>{{ I18nT('host.CloudflareTunnel.TunnelRule') }}</span>
-              <template v-if="isLocked && props.row.dns.length > 0">
-                <el-tooltip placement="top" :content="I18nT('host.CloudflareTunnel.licenseTips')">
-                  <el-button type="warning" link :icon="Lock"></el-button>
-                </el-tooltip>
-              </template>
-              <template v-else>
-                <el-button link :icon="Plus" @click.stop="addDNS(props.row)"></el-button>
-              </template>
+              <el-button link :icon="Plus" @click.stop="addDNS(props.row)"></el-button>
             </div>
             <el-table :data="props.row.dns" show-overflow-tooltip>
               <el-table-column width="30px"></el-table-column>
@@ -217,7 +203,7 @@
 
 <script lang="ts" setup>
   import { I18nT } from '@lang/index'
-  import { Lock, Plus } from '@element-plus/icons-vue'
+  import { Plus } from '@element-plus/icons-vue'
   import { Setup } from './setup'
   import { AppStore } from '@/store/app'
   import { CloudflareTunnel } from '@/core/CloudflareTunnel/CloudflareTunnel'
@@ -238,8 +224,7 @@
     editDNS,
     delDNS,
     addDNS,
-    log,
-    isLocked
+    log
   } = Setup()
 
   const action = (item: CloudflareTunnel, index: number, flag: string) => {

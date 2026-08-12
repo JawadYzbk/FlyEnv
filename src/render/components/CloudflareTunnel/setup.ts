@@ -7,8 +7,7 @@ import { CloudflareTunnelDnsRecord, ZoneType } from '@/core/CloudflareTunnel/typ
 import Base from '@/core/Base'
 import { I18nT } from '@lang/index'
 import { clipboard, shell } from '@/util/NodeFn'
-import { MessageError, MessageSuccess } from '@/util/Element'
-import { SetupStore } from '@/components/Setup/store'
+import { MessageSuccess } from '@/util/Element'
 
 export const ZoneDict: Record<string, ZoneType[]> = reactive({})
 
@@ -25,10 +24,6 @@ export const Setup = () => {
   })
 
   function add() {
-    if (isLocked.value) {
-      MessageError(I18nT('host.CloudflareTunnel.licenseTips'))
-      return
-    }
     AsyncComponentShow(AddVM).then()
   }
 
@@ -128,23 +123,10 @@ export const Setup = () => {
   })
 
   function addDNS(item: CloudflareTunnel) {
-    if (isLocked.value && item.dns.length > 0) {
-      MessageError(I18nT('host.CloudflareTunnel.licenseTips'))
-      return
-    }
     AsyncComponentShow(AddDNSVM, {
       item: JSON.parse(JSON.stringify(item))
     }).then()
   }
-
-  const setupStore = SetupStore()
-  const isLocked = computed(() => {
-    if (setupStore.isActive) {
-      return false
-    }
-
-    return CloudflareTunnelStore.items.length > 0
-  })
 
   return {
     add,
@@ -159,7 +141,6 @@ export const Setup = () => {
     editDNS,
     delDNS,
     addDNS,
-    log,
-    isLocked
+    log
   }
 }

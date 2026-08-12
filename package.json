@@ -71,6 +71,9 @@
   "type": "module",
   "main": "./dist/electron/main.mjs",
   "license": "MIT",
+  "resolutions": {
+    "node-gyp": "13.0.1"
+  },
   "dependencies": {
     "7zip-min-electron": "^1.4.4",
     "@ayonli/jsext": "^1.7.4",

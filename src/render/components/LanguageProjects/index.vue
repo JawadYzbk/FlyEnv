@@ -332,9 +332,6 @@
   import { isEqual } from 'lodash-es'
   import { Project } from '@/util/Project'
   import type { AllAppModule } from '@/core/type'
-  import { SetupStore } from '@/components/Setup/store'
-  import Router from '@/router'
-  import { AppStore } from '@/store/app'
   import { join } from '@/util/path-browserify'
   import { shell } from '@/util/NodeFn'
   import { ProjectItem } from '@/components/LanguageProjects/ProjectItem'
@@ -376,22 +373,11 @@
 
   const project = ProjectSetup(props.typeFlag)
 
-  const appStore = AppStore()
-  const setupStore = SetupStore()
-
   const isLock = computed(() => {
-    return !setupStore.isActive && project.project.length > 2
+    return false
   })
 
-  const toLicense = () => {
-    setupStore.tab = 'licenses'
-    appStore.currentPage = '/setup'
-    Router.push({
-      path: '/setup'
-    })
-      .then()
-      .catch()
-  }
+  const toLicense = () => {}
 
   const tableData = computed(() => {
     const search = project.search.trim()

@@ -211,9 +211,6 @@
   import { AppCustomerModule, type CustomerModuleItem } from '@/core/Module'
   import { getExtractedSVG } from 'svg-inline-loader'
   import Base from '@/core/Base'
-  import { SetupStore } from '@/components/Setup/store'
-  import Router from '@/router'
-  import { AppStore } from '@/store/app'
   import { dialog, fs } from '@/util/NodeFn'
 
   const { show, onClosed, onSubmit, closedFn, callback } = AsyncComponentSetup()
@@ -423,22 +420,11 @@
     show.value = false
   }
 
-  const appStore = AppStore()
-  const setupStore = SetupStore()
-
   const isLock = computed(() => {
-    return !setupStore.isActive && item.value.item.length > 2
+    return false
   })
 
-  const toLicense = () => {
-    setupStore.tab = 'licenses'
-    appStore.currentPage = '/setup'
-    Router.push({
-      path: '/setup'
-    })
-      .then()
-      .catch()
-  }
+  const toLicense = () => {}
 
   onMounted(() => {})
   onUnmounted(() => {})

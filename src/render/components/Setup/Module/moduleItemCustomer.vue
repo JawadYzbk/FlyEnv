@@ -77,8 +77,6 @@
   import { AsyncComponentShow } from '@/util/AsyncComponent'
   import { ModuleCustomer } from '@/core/ModuleCustomer'
   import Base from '@/core/Base'
-  import { SetupStore } from '@/components/Setup/store'
-  import Router from '@/router'
 
   const props = defineProps<{
     index: number
@@ -189,19 +187,9 @@
       .catch()
   }
 
-  const setupStore = SetupStore()
-
   const isLock = computed(() => {
-    return !setupStore.isActive && AppCustomerModule.module.length > 2
+    return false
   })
 
-  const toLicense = () => {
-    setupStore.tab = 'licenses'
-    appStore.currentPage = '/setup'
-    Router.push({
-      path: '/setup'
-    })
-      .then()
-      .catch()
-  }
+  const toLicense = () => {}
 </script>

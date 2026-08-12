@@ -81,7 +81,6 @@
   import { languagesToCheck } from '../CodePlayground/languageDetector'
   import { uuid } from '@/util/Index'
   import { Plus, Lock } from '@element-plus/icons-vue'
-  import { SetupStore } from '@/components/Setup/store'
 
   const { show, onClosed, onSubmit, closedFn, callback } = AsyncComponentSetup()
 
@@ -115,10 +114,8 @@
     form.value.groupID = props.groupID
   }
 
-  const setupStore = SetupStore()
-
   const isLock = computed(() => {
-    return !setupStore.isActive && CodeLibrary.items.length > 2 && !props.item?.id
+    return false
   })
 
   const groups = computed(() => {

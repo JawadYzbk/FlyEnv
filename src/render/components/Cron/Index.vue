@@ -78,8 +78,6 @@
   import { I18nT } from '@lang/index'
   import { AppStore } from '@/store/app'
   import { AppModuleSetup } from '@/core/Module'
-  import { SetupStore } from '@/components/Setup/store'
-  import Router from '@/router'
   import ListTable from './ListTable.vue'
   import SystemTaskTable from './SystemTaskTable.vue'
   import DialogAdd from './DialogAdd.vue'
@@ -89,7 +87,6 @@
   const route = useRoute()
   const router = useRouter()
   const appStore = AppStore()
-  const setupStore = SetupStore()
   const cronStore = useCronStore()
   const { tab } = AppModuleSetup('cron')
   const tabs = [I18nT('cron.title'), I18nT('cron.systemTasks')]
@@ -107,7 +104,7 @@
   })
 
   const isLock = computed(() => {
-    return !setupStore.isActive && stats.value.total >= 1
+    return false
   })
 
   const hostOptions = computed(() => {
@@ -161,15 +158,7 @@
     showDialog.value = true
   }
 
-  const toLicense = () => {
-    setupStore.tab = 'licenses'
-    appStore.currentPage = '/setup'
-    Router.push({
-      path: '/setup'
-    })
-      .then()
-      .catch()
-  }
+  const toLicense = () => {}
 
   const onEdit = (item: CronJob) => {
     editingItem.value = item

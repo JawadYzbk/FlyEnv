@@ -5,8 +5,6 @@ import type { PromptItem } from '@/components/AI/Prompt/setup'
 import { AIOllama } from '@/components/AI/AIOllama'
 import { AsyncComponentShow } from '@/util/AsyncComponent'
 import localForage from 'localforage'
-import { SetupStore } from '@/components/Setup/store'
-import { ElMessageBox } from 'element-plus'
 
 export type ToolCallItem = {
   function: {
@@ -123,36 +121,7 @@ export const AISetup = reactive<{
 })
 
 export const Setup = () => {
-  const setupStore = SetupStore()
-
   const startNewChat = () => {
-    if (!setupStore.isActive) {
-      const showTips = () => {
-        const time = Math.round(new Date().getTime() / 1000)
-        localForage.setItem('flyenv-ai-start-try-time', time).then().catch()
-        AISetup.trialStartTime = time
-        AISetup.save()
-        ElMessageBox.alert(I18nT('ai.noLiencesTips'), I18nT('ai.alert'), {
-          confirmButtonText: I18nT('base.confirm')
-        })
-          .then()
-          .catch()
-      }
-      localForage
-        .getItem('flyenv-ai-start-try-time')
-        .then((res: number) => {
-          console.log('flyenv-ai-start-try-time: ', res)
-          if (res) {
-            AISetup.trialStartTime = res
-            AISetup.save()
-          } else {
-            showTips()
-          }
-        })
-        .catch(() => {
-          showTips()
-        })
-    }
     const id = uuid()
     const item = reactive(
       new AIOllama({

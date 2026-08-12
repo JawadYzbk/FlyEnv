@@ -109,16 +109,13 @@
   import { type HostProjectType, HostStore } from './store'
   import ListTomcat from './Tomcat/ListTable.vue'
   import VhostTmpl from './VhostTmpl/index.vue'
-  import { SetupStore } from '@/components/Setup/store'
-  import Router from '@/router'
   import { join, dirname } from '@/util/path-browserify'
   import { dialog, clipboard, shell, fs } from '@/util/NodeFn'
 
   const appStore = AppStore()
-  const setupStore = SetupStore()
 
   const isLock = computed(() => {
-    return !setupStore.isActive && appStore.hosts.length > 2
+    return false
   })
 
   const tabs = computed(() => {
@@ -357,15 +354,7 @@
       })
     }
   }
-  const toLicense = () => {
-    setupStore.tab = 'licenses'
-    appStore.currentPage = '/setup'
-    Router.push({
-      path: '/setup'
-    })
-      .then()
-      .catch()
-  }
+  const toLicense = () => {}
   const openCreateProject = () => {
     import('./CreateProject/new.vue').then((res) => {
       AsyncComponentShow(res.default).then(({ dir, rewrite }: any) => {
