@@ -8,7 +8,7 @@ index 666f0d3..67b7c05 100644
              "windowscodecs.lib",
 -            "shcore.lib"
 +            "shcore.lib",
-+            "windowsapp.lib"
++            "WindowsApp.lib"
            ],
              "defines": [
                "WIN32_LEAN_AND_MEAN",
