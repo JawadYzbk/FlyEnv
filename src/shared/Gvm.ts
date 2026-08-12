@@ -12,8 +12,7 @@ export type GvmInstalledVersion = {
   isDefault: boolean
 }
 
-const GVM_VERSION_PATTERN =
-  /^(?:go[A-Za-z0-9._-]*|release\.[A-Za-z0-9._-]+|weekly\.[A-Za-z0-9._-]+)$/
+const GVM_VERSION_PATTERN = /^go\d+\.\d+\.\d+$/
 
 export function isGvmVersionIdentifier(value: string): boolean {
   return GVM_VERSION_PATTERN.test(value)

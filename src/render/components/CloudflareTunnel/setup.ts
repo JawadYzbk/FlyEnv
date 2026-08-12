@@ -1,7 +1,6 @@
 import { CloudflareTunnel } from '@/core/CloudflareTunnel/CloudflareTunnel'
 import { computed, reactive } from 'vue'
 import CloudflareTunnelStore from '@/core/CloudflareTunnel/CloudflareTunnelStore'
-import { AppStore } from '@/store/app'
 import { AsyncComponentShow } from '@/util/AsyncComponent'
 import { CloudflareTunnelDnsRecord, ZoneType } from '@/core/CloudflareTunnel/type'
 import Base from '@/core/Base'
@@ -12,8 +11,6 @@ import { MessageSuccess } from '@/util/Element'
 export const ZoneDict: Record<string, ZoneType[]> = reactive({})
 
 export const Setup = () => {
-  const appStore = AppStore()
-
   const list = computed(() => {
     return CloudflareTunnelStore.items
   })
@@ -72,19 +69,6 @@ export const Setup = () => {
     shell.openExternal(localServiceUrl(item)).catch()
   }
 
-  const groupTrunOn = (item: CloudflareTunnel) => {
-    const dict = JSON.parse(JSON.stringify(appStore.phpGroupStart))
-    const key = item.id
-    if (dict?.[key] === false) {
-      dict[key] = true
-      delete dict?.[key]
-    } else {
-      dict[key] = false
-    }
-    appStore.config.setup.phpGroupStart = reactive(dict)
-    appStore.saveConfig().then().catch()
-  }
-
   const copy = (str: string) => {
     clipboard.writeText(str).then(() => {
       MessageSuccess(I18nT('base.copySuccess'))
@@ -136,7 +120,6 @@ export const Setup = () => {
     openOutUrl,
     openLocalUrl,
     localServiceUrl,
-    groupTrunOn,
     copy,
     editDNS,
     delDNS,

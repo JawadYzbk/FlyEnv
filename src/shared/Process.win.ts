@@ -9,6 +9,22 @@ import { execPromiseWithEnv } from '@shared/child-process'
 import { readFile, remove } from '@shared/fs-extra'
 import EnvSync from '@shared/EnvSync'
 
+const PROCESS_LIST_TIMEOUT_MS = 60_000
+
+const withProcessListTimeout = <T>(task: Promise<T>) => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  return Promise.race([
+    task,
+    new Promise<T>((_, reject) => {
+      timer = setTimeout(() => {
+        reject(new Error(`Windows process list timed out after ${PROCESS_LIST_TIMEOUT_MS}ms`))
+      }, PROCESS_LIST_TIMEOUT_MS)
+    })
+  ]).finally(() => {
+    if (timer) clearTimeout(timer)
+  })
+}
+
 const shouldUseHelper = async () => {
   let useHelper = false
   try {
@@ -36,7 +52,9 @@ const normalizeWindowsProcessList = (parsed: any): PItem[] => {
 export const ProcessPidListStrict = async (): Promise<PItem[]> => {
   if (await shouldUseHelper()) {
     try {
-      const content: string = (await Helper.send('tools', 'processListWin')) as any
+      const content: string = (await withProcessListTimeout(
+        Helper.send('tools', 'processListWin') as Promise<string>
+      )) as any
       return normalizeWindowsProcessList(JSON5.parse(content))
     } catch (error) {
       appDebugLog('[ProcessPidList][helper-fallback]', `${error}`).catch()
@@ -48,7 +66,9 @@ export const ProcessPidListStrict = async (): Promise<PItem[]> => {
     const command = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;[Console]::InputEncoding = [System.Text.Encoding]::UTF8;Get-CimInstance Win32_Process | Select-Object CommandLine,ProcessId,ParentProcessId,CreationClassName | ConvertTo-Json | Out-File -FilePath "${file}" -Encoding utf8`
     await EnvSync.sync()
     await execPromiseWithEnv(command, {
-      shell: EnvSync.PowerShellPath || 'powershell.exe'
+      shell: EnvSync.PowerShellPath || 'powershell.exe',
+      timeout: PROCESS_LIST_TIMEOUT_MS,
+      windowsHide: true
     })
     const content = await readFile(file, 'utf-8')
     return normalizeWindowsProcessList(JSON5.parse(content))
@@ -205,4 +225,38 @@ export const fetchProcessPidByPort = async (port: string): Promise<string[]> => 
     }
   }
   return Array.from(pids)
+}
+
+export function loopbackListeningPidsFromNetstat(content: string, port: string): string[] {
+  const pids = new Set<string>()
+  for (const entry of content.split('\n')) {
+    const parts = entry.trim().replace(/\s+/g, ' ').split(' ')
+    if (parts.length !== 5 || parts[0].toUpperCase() !== 'TCP') continue
+    const [_, localAddress, __, state, pid] = parts
+    const loopbackAddress = /^(?:127\.0\.0\.1|0\.0\.0\.0|\[::\]|\[::1\]):\d+$/.test(
+      localAddress
+    )
+    if (
+      loopbackAddress &&
+      localAddress.endsWith(`:${port}`) &&
+      state === 'LISTENING' &&
+      /^\d+$/.test(pid)
+    ) {
+      pids.add(pid)
+    }
+  }
+  return Array.from(pids)
+}
+
+export const fetchLoopbackListeningPids = async (port: string): Promise<string[]> => {
+  try {
+    await EnvSync.sync()
+    const result = await execPromiseWithEnv('netstat -ano -p tcp', {
+      shell: EnvSync.PowerShellPath || 'powershell.exe'
+    })
+    return loopbackListeningPidsFromNetstat(result.stdout, port)
+  } catch (error) {
+    console.error('fetchLoopbackListeningPids error: ', error)
+    return []
+  }
 }

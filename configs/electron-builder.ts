@@ -3,8 +3,12 @@ import PublishConfig from './publish'
 import AfterPack from '../build/afterPack'
 import Notarize from '../build/notarize'
 
-// 获取当前 Node.js 运行环境的架构
-const currentArch = process.arch === 'arm64' ? 'arm64' : 'x64'
+// Use the requested macOS target architecture when cross-building; otherwise use the host arch.
+const configuredArch = process.env.FLYENV_MAC_BUILD_ARCH
+const currentArch =
+  configuredArch === 'arm64' || (configuredArch !== 'x64' && process.arch === 'arm64')
+    ? 'arm64'
+    : 'x64'
 
 // node-pty 自带全部平台的 prebuilds;mac 构建只需当前架构对应的 darwin-* 一个,
 // 其余平台(含 Windows 专用的 third_party/conpty)全部裁掉以减小体积。
@@ -33,8 +37,8 @@ const ptyPrebuildExcludes = [
 const conf: Configuration = {
   productName: 'FlyEnv',
   executableName: 'FlyEnv',
-  buildVersion: '4.17.2',
-  electronVersion: '39.8.7',
+  buildVersion: '4.18.0',
+  electronVersion: '39.8.10',
   appId: 'phpstudy.xpfme.com',
   asar: true,
   directories: {

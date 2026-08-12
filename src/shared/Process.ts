@@ -313,9 +313,16 @@ export const ProcessKillStrict = async (sig: string, pids: string[]) => {
     useHelper = false
   }
   if (useHelper) {
-    const res = await Helper.send('tools', 'kill', sig, pids)
-    appDebugLog(`[ProcessKill][helper]`, `${JSON.stringify({ res, sig, pids })}`).catch()
-    return
+    try {
+      const res = await Helper.send('tools', 'kill', sig, pids)
+      appDebugLog(`[ProcessKill][helper]`, `${JSON.stringify({ res, sig, pids })}`).catch()
+      return
+    } catch (error) {
+      appDebugLog(`[ProcessKill][helper-fallback]`, `${error}`).catch()
+      if (!isWindows()) {
+        throw error
+      }
+    }
   }
 
   let command = ``
@@ -394,4 +401,24 @@ export const fetchProcessPidByPort = async (port: string): Promise<PItem[]> => {
     return allPitems
   }
   return []
+}
+
+export function loopbackListeningPidsFromLsof(content: string): string[] {
+  return Array.from(
+    new Set(
+      content
+        .split('\n')
+        .map((pid) => pid.trim())
+        .filter((pid) => /^\d+$/.test(pid))
+    )
+  )
+}
+
+export const fetchLoopbackListeningPids = async (port: string): Promise<string[]> => {
+  try {
+    const result = await execPromiseWithEnv(`lsof -nP -iTCP@127.0.0.1:${port} -sTCP:LISTEN -t`)
+    return loopbackListeningPidsFromLsof(result.stdout)
+  } catch {
+    return []
+  }
 }

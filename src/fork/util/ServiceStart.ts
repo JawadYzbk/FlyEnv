@@ -52,6 +52,27 @@ export type ServiceStartSpawnParams = {
   outFile?: string
   /** Override where the process stderr is written (default: baseDir/<flag>-<ver>-start-error.log) */
   errFile?: string
+  /** Redact executable arguments and environment values from the startup diagnostic log. */
+  sensitive?: boolean
+  /** Keep wrapper processes attached when the platform launcher cannot survive CREATE_NEW_PROCESS_GROUP. */
+  detached?: boolean
+}
+
+type ServiceStartSpawnLogParam = Omit<ServiceStartSpawnParams, 'execArgs' | 'execEnv'> & {
+  execArgs?: string[] | '[REDACTED]'
+  execEnv?: Record<string, string> | '[REDACTED]'
+}
+
+export function serviceStartSpawnLogParam(
+  param: ServiceStartSpawnParams
+): ServiceStartSpawnLogParam {
+  if (!param.sensitive) return param
+  const { execArgs, execEnv, ...safeParam } = param
+  return {
+    ...safeParam,
+    execArgs: execArgs ? '[REDACTED]' : undefined,
+    execEnv: execEnv ? '[REDACTED]' : undefined
+  }
 }
 
 type UnixCustomerServiceStartScriptParams = {
@@ -404,7 +425,7 @@ export async function customerServiceStartExec(
 export async function serviceStartSpawn(
   param: ServiceStartSpawnParams
 ): Promise<{ 'APP-Service-Start-PID': string }> {
-  console.log('serviceStartSpawn param: ', param)
+  console.log('serviceStartSpawn param: ', serviceStartSpawnLogParam(param))
   const baseDir = param.baseDir
   const version = param.version
   const execEnv = param?.execEnv ?? ''
@@ -444,7 +465,7 @@ export async function serviceStartSpawn(
   const doExec = (): Promise<{ 'APP-Service-Start-PID': string }> => {
     const cwd = param?.cwd ?? dirname(bin)
     const options: any = {
-      detached: true,
+      detached: param.detached ?? true,
       stdio: ['ignore', out, err],
       cwd,
       env: {

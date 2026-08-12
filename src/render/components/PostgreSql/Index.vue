@@ -8,6 +8,27 @@
     <div class="main-block">
       <Service v-if="tab === 0" type-flag="postgresql" title="PostgreSQL">
         <template #tool-left>
+          <el-button
+            v-if="isRunning"
+            style="color: #01cc74"
+            class="button"
+            link
+            :disabled="pgAdminOpening"
+            @click.stop="pgAdminPanel.open()"
+          >
+            <el-icon
+              v-if="pgAdminOpening"
+              class="is-loading"
+              style="width: 20px; height: 20px; margin-left: 10px"
+            >
+              <Loading />
+            </el-icon>
+            <yb-icon
+              v-else
+              style="width: 20px; height: 20px; margin-left: 10px"
+              :svg="import('@/svg/http.svg?raw')"
+            ></yb-icon>
+          </el-button>
           <div class="flex items-center gap-1 pl-4 pr-2">
             <span class="flex-shrink-0">{{ I18nT('util.mysqlDataDir') }}: </span>
             <span
@@ -17,7 +38,7 @@
             >
             <el-button
               class="flex-shrink-0"
-              :disabled="!DATA_DIR"
+              :disabled="isRunning || !DATA_DIR"
               link
               :icon="Edit"
               @click.stop="chooseDir"
@@ -46,11 +67,12 @@
   import { I18nT } from '@lang/index'
   import { join } from '@/util/path-browserify'
   import { BrewStore } from '@/store/brew'
-  import { computed } from 'vue'
+  import { computed, ref, watch } from 'vue'
   import { PostgreSqlSetup } from './setup'
   import { chooseFolder } from '@/util/File'
-  import { Edit } from '@element-plus/icons-vue'
+  import { Edit, Loading } from '@element-plus/icons-vue'
   import { shell } from '@/util/NodeFn'
+  import pgAdminPanel from './PgAdminPanel'
 
   const { tab, checkVersion } = AppModuleSetup('nginx')
   const tabs = [
@@ -66,6 +88,29 @@
   const currentVersion = computed(() => {
     return brewStore.currentVersion('postgresql')
   })
+  const runningVersion = computed(() => {
+    return brewStore.module('postgresql').installed.find((item) => item.run)
+  })
+  const isRunning = computed(() => !!runningVersion.value)
+  const runningDataDir = ref('')
+  const updateRunningDataDir = (version: typeof runningVersion.value) => {
+    if (!version?.bin) {
+      runningDataDir.value = ''
+      return
+    }
+    const versionTop = version.version?.split('.')?.shift() ?? ''
+    runningDataDir.value =
+      PostgreSqlSetup.dir[version.bin] ??
+      join(window.Server.PostgreSqlDir!, `postgresql${versionTop}`)
+  }
+  watch(runningVersion, updateRunningDataDir, { immediate: true })
+  const refreshRunningDataDir = () => updateRunningDataDir(runningVersion.value)
+  const pgAdminOpening = pgAdminPanel.opening
+  PostgreSqlSetup.init()
+    .then(() => {
+      refreshRunningDataDir()
+    })
+    .catch()
 
   const DATA_DIR = computed({
     get() {
@@ -80,7 +125,7 @@
       return I18nT('base.needSelectVersion')
     },
     set(v: string) {
-      if (!currentVersion?.value?.bin) {
+      if (isRunning.value || !currentVersion?.value?.bin) {
         return
       }
       PostgreSqlSetup.dir[currentVersion.value.bin] = v
@@ -89,6 +134,9 @@
   })
 
   const chooseDir = () => {
+    if (isRunning.value) {
+      return
+    }
     chooseFolder()
       .then((path: string) => {
         DATA_DIR.value = path

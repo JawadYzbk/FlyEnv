@@ -100,6 +100,7 @@ process.on('message', function (args: any) {
     return
   } else {
     // 假设 manager 内部使用了 process.send，现在也能正常工作了
+    const logArgs = Array.isArray(args) ? args.slice(3) : args
     manager
       .exec(args)
       .then()
@@ -111,7 +112,7 @@ process.on('message', function (args: any) {
         appDebugLog(
           '[Fork][exec][error]',
           `${JSON.stringify({
-            args,
+            args: logArgs,
             error
           })}`
         ).catch()

@@ -6,7 +6,30 @@
       </template>
     </el-radio-group>
     <div class="main-block">
-      <Service v-if="tab === 0" type-flag="mongodb" title="MongoDB"></Service>
+      <Service v-if="tab === 0" type-flag="mongodb" title="MongoDB">
+        <template v-if="isRunning" #tool-left>
+          <el-button
+            style="color: #01cc74"
+            class="button"
+            link
+            :disabled="dbGateOpening || !dbGateNodeAvailable"
+            @click.stop="dbGatePanel.open()"
+          >
+            <el-icon
+              v-if="dbGateOpening"
+              class="is-loading"
+              style="width: 20px; height: 20px; margin-left: 10px"
+            >
+              <Loading />
+            </el-icon>
+            <yb-icon
+              v-else
+              style="width: 20px; height: 20px; margin-left: 10px"
+              :svg="import('@/svg/http.svg?raw')"
+            ></yb-icon>
+          </el-button>
+        </template>
+      </Service>
       <Manager
         v-else-if="tab === 1"
         type-flag="mongodb"
@@ -26,13 +49,24 @@
   import Manager from '../VersionManager/index.vue'
   import { AppModuleSetup } from '@/core/Module'
   import { I18nT } from '@lang/index'
+  import { computed } from 'vue'
+  import { Loading } from '@element-plus/icons-vue'
+  import { BrewStore } from '@/store/brew'
+  import dbGatePanel from './DbGatePanel'
 
   const { tab, checkVersion } = AppModuleSetup('mongodb')
+  const brewStore = BrewStore()
+  const isRunning = computed(() => {
+    return brewStore.module('mongodb').installed.some((item) => item.run)
+  })
+  const dbGateOpening = dbGatePanel.opening
+  const dbGateNodeAvailable = dbGatePanel.nodeAvailable
   const tabs = [
     I18nT('base.service'),
     I18nT('base.versionManager'),
     I18nT('base.configFile'),
     I18nT('base.log')
   ]
+
   checkVersion()
 </script>

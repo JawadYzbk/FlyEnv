@@ -53,10 +53,10 @@ export class ModuleInstalledItem implements SoftInstalled {
       if (module?.startExtParam) {
         try {
           params = await module.startExtParam(this)
-        } catch {
+        } catch (error) {
           this.run = false
           this.running = false
-          resolve(true)
+          resolve(`${error}`)
           return
         }
       }
