@@ -111,6 +111,7 @@
   import VhostTmpl from './VhostTmpl/index.vue'
   import { join, dirname } from '@/util/path-browserify'
   import { dialog, clipboard, shell, fs } from '@/util/NodeFn'
+  import { splitHostAliases } from '@shared/siteRuntime'
 
   const appStore = AppStore()
 
@@ -185,11 +186,7 @@
     })
   }
   const hostAlias = (item: AppHost) => {
-    const alias = item.alias
-      ? item.alias.split('\n').filter((n) => {
-          return n && n.length > 0
-        })
-      : []
+    const alias = splitHostAliases(item.alias)
     if (item?.name) {
       alias.unshift(item.name)
     }

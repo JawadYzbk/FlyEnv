@@ -1,5 +1,5 @@
 diff --git a/node_modules/@xpf0000/node-window-manager/binding.gyp b/node_modules/@xpf0000/node-window-manager/binding.gyp
-index 666f0d3..67b7c05 100644
+index 666f0d3..7dff8c8 100644
 --- a/node_modules/@xpf0000/node-window-manager/binding.gyp
 +++ b/node_modules/@xpf0000/node-window-manager/binding.gyp
 @@ -18,7 +18,8 @@

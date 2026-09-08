@@ -34,6 +34,7 @@ import { fetchHostList, saveHostList } from './HostFile'
 import { validateTomcatSite, type TomcatSiteHost } from '../Tomcat/Site'
 import Helper from '../../Helper'
 import { appDebugLog, isLinux, isMacOS, isWindows } from '@shared/utils'
+import { splitHostAliases } from '@shared/siteRuntime'
 import { HostsFileLinux, HostsFileMacOS, HostsFileWindows } from '@shared/PlatFormConst'
 import { AppHelperCheck } from '@shared/AppHelperCheck'
 import { reconcileSystemHostsBlock } from './SystemHostsBlock'
@@ -119,11 +120,7 @@ export class Host extends Base {
             if (find) {
               continue
             }
-            const aliasArr = item.alias
-              ? item.alias.split('\n').filter((n: string) => {
-                  return n && n?.trim()?.length > 0
-                })
-              : []
+            const aliasArr = splitHostAliases(item.alias)
             item.alias = aliasArr
               .map((a: string) => {
                 const arr = a.trim().split('.')
